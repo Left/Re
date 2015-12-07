@@ -34,6 +34,7 @@ module Re {
                 this.nowCalling = f;
 
                 // Real call here
+
                 console.log("Calling", f);
                 const res:T = f();
 
