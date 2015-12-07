@@ -21,23 +21,20 @@ module Re {
 
             console.log("Wrapped", fCont, "as", f["id"]);
 
-            f["deps"] = [];
-
             const wrapped: Cell<T> = (): T => {
                 const wasCalling = this.nowCalling;
 
+                f["deps"] = [];
+
                 if (wasCalling) {
-                    f["deps"].push(wasCalling);
+                    wasCalling["deps"].push(f);
                     console.log(wasCalling, "calls", f);
                 }
 
                 this.nowCalling = f;
 
-                if (wasCalling === this.nowCalling) {
-                    console.trace();
-                    return;
-                }
-
+                // Real call here
+                console.log("Calling", f);
                 const res:T = f();
 
                 this.nowCalling = wasCalling;
@@ -45,12 +42,18 @@ module Re {
                 if (f["val"] !== res) {
                     console.log(f, "has a new val", res);
                     f["val"] = res;
+
                     if (!this.init) {
                         setTimeout(() => {
+                            if (wasCalling) {
+                                wasCalling['wrapper']();
+                            }
+/*
                             for (const wr of f['deps']) {
-                                console.log("Need to recall>", wr['wrapper']);
+                                console.log("Need to recall>", wr);
                                 // wr['wrapper']();
                             }
+*/
                         }, 1000);
                     }
                 }

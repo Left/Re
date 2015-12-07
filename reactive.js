@@ -11,18 +11,16 @@ var Re;
             var fCont = f.toString();
             f.toString = function () { return "id " + f["id"]; };
             console.log("Wrapped", fCont, "as", f["id"]);
-            f["deps"] = [];
             var wrapped = function () {
                 var wasCalling = _this.nowCalling;
+                f["deps"] = [];
                 if (wasCalling) {
-                    f["deps"].push(wasCalling);
+                    wasCalling["deps"].push(f);
                     console.log(wasCalling, "calls", f);
                 }
                 _this.nowCalling = f;
-                if (wasCalling === _this.nowCalling) {
-                    console.trace();
-                    return;
-                }
+                // Real call here
+                console.log("Calling", f);
                 var res = f();
                 _this.nowCalling = wasCalling;
                 if (f["val"] !== res) {
@@ -30,10 +28,15 @@ var Re;
                     f["val"] = res;
                     if (!_this.init) {
                         setTimeout(function () {
-                            for (var _i = 0, _a = f['deps']; _i < _a.length; _i++) {
-                                var wr = _a[_i];
-                                console.log("Need to recall>", wr['wrapper']);
+                            if (wasCalling) {
+                                wasCalling['wrapper']();
                             }
+                            /*
+                                                        for (const wr of f['deps']) {
+                                                            console.log("Need to recall>", wr);
+                                                            // wr['wrapper']();
+                                                        }
+                            */
                         }, 1000);
                     }
                 }
