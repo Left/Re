@@ -9,18 +9,22 @@ var Re;
             var _this = this;
             f["id"] = ++(this.nextId);
             var fCont = f.toString();
-            f["toString"] = function () { return f["id"]; };
+            f.toString = function () { return "id " + f["id"]; };
             console.log("Wrapped", fCont, "as", f["id"]);
             f["deps"] = [];
             var wrapped = function () {
-                var wasCalling = _this.nowCallling;
+                var wasCalling = _this.nowCalling;
                 if (wasCalling) {
                     f["deps"].push(wasCalling);
+                    console.log(wasCalling, "calls", f);
                 }
-                _this.nowCallling = f;
-                console.log(wasCalling, "calls", _this.nowCallling);
+                _this.nowCalling = f;
+                if (wasCalling === _this.nowCalling) {
+                    console.trace();
+                    return;
+                }
                 var res = f();
-                _this.nowCallling = wasCalling;
+                _this.nowCalling = wasCalling;
                 if (f["val"] !== res) {
                     console.log(f, "has a new val", res);
                     f["val"] = res;
@@ -28,14 +32,15 @@ var Re;
                         setTimeout(function () {
                             for (var _i = 0, _a = f['deps']; _i < _a.length; _i++) {
                                 var wr = _a[_i];
-                                wr['wrapper']();
+                                console.log("Need to recall>", wr['wrapper']);
                             }
-                        }, 1);
+                        }, 1000);
                     }
                 }
                 return res;
             };
             f["wrapper"] = wrapped;
+            wrapped.toString = function () { return "Wrapped " + f.toString(); };
             this.all.push(wrapped);
             return wrapped;
         };

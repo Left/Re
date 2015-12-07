@@ -1,25 +1,25 @@
 /// <reference path="reactive.ts"/>
 
 document.addEventListener("DOMContentLoaded", () => {
-    const world = new Re.Processors();
+    const w = new Re.Processors();
 
-    const cellInput = world.wrap(() => {
+    const cellInput = w.wrap(() => {
         return (<HTMLInputElement>document.getElementById("inp")).value;
     });
 
     document.getElementById("inp").addEventListener('input', (e) => {
-        world.rerequest(cellInput);
+        w.rerequest(cellInput);
     });
 
-    const cellProcessor = world.wrap(() => {
+    const cellProcessor = w.wrap(() => {
         return "[" + cellInput() + "]";
     });
 
 
-    world.wrap(() => {
+    w.wrap(() => {
         document.getElementById("res").innerText = cellProcessor();
         return null;
     });
 
-    world.go();
+    w.go();
 });

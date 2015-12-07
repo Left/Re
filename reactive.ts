@@ -8,32 +8,39 @@ module Re {
 
     export class Processors {
         private nextId: number = 0;
-        // private deps: { [id: string]: string[] };
-        private nowCallling: Cell<any>;
+
+        private nowCalling: Cell<any>;
         private all:Cell<any>[] = [];
         private init: boolean;
 
         wrap<T>(f: Cell<T>): Cell<T> {
             f["id"] = ++(this.nextId);
+
             const fCont = f.toString();
-            f["toString"] = function() { return f["id"] };
+            f.toString = () => "id " + f["id"];
 
             console.log("Wrapped", fCont, "as", f["id"]);
+
             f["deps"] = [];
 
             const wrapped: Cell<T> = (): T => {
-                const wasCalling = this.nowCallling;
+                const wasCalling = this.nowCalling;
 
                 if (wasCalling) {
                     f["deps"].push(wasCalling);
+                    console.log(wasCalling, "calls", f);
                 }
 
-                this.nowCallling = f;
-                console.log(wasCalling, "calls", this.nowCallling);
+                this.nowCalling = f;
+
+                if (wasCalling === this.nowCalling) {
+                    console.trace();
+                    return;
+                }
 
                 const res:T = f();
 
-                this.nowCallling = wasCalling;
+                this.nowCalling = wasCalling;
 
                 if (f["val"] !== res) {
                     console.log(f, "has a new val", res);
@@ -41,15 +48,17 @@ module Re {
                     if (!this.init) {
                         setTimeout(() => {
                             for (const wr of f['deps']) {
-                                wr['wrapper']();
+                                console.log("Need to recall>", wr['wrapper']);
+                                // wr['wrapper']();
                             }
-                        }, 1);
+                        }, 1000);
                     }
                 }
 
                 return res;
             };
             f["wrapper"] = wrapped;
+            wrapped.toString = () => "Wrapped " + f.toString();
             this.all.push(wrapped);
 
             return <Cell<T>>wrapped;

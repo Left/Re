@@ -1,19 +1,19 @@
 /// <reference path="reactive.ts"/>
 document.addEventListener("DOMContentLoaded", function () {
-    var world = new Re.Processors();
-    var cellInput = world.wrap(function () {
+    var w = new Re.Processors();
+    var cellInput = w.wrap(function () {
         return document.getElementById("inp").value;
     });
     document.getElementById("inp").addEventListener('input', function (e) {
-        world.rerequest(cellInput);
+        w.rerequest(cellInput);
     });
-    var cellProcessor = world.wrap(function () {
+    var cellProcessor = w.wrap(function () {
         return "[" + cellInput() + "]";
     });
-    world.wrap(function () {
+    w.wrap(function () {
         document.getElementById("res").innerText = cellProcessor();
         return null;
     });
-    world.go();
+    w.go();
 });
 //# sourceMappingURL=test.js.map
