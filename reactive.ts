@@ -21,15 +21,15 @@ module Re {
         private all:Cell<any>[] = [];
         private init: boolean;
 
-        wrap<T>(f_: Cell<T>): Cell<T> {
-            const f = <Cell2<T>> f_;
+        wrap<T>(fPar: Cell<T>): Cell<T> {
+            const f = <Cell2<T>> fPar;
 
             f.id = ++(this.nextId);
             f.deps = {};
             f.calls = {};
 
             const fCont = f.toString();
-            f.toString = () => "id " + f.id;
+            f.toString = () => "id (" + f.id + ")";
 
             // console.log("Wrapped", fCont, "as", f["id"]);
 

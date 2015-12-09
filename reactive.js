@@ -5,14 +5,14 @@ var Re;
             this.nextId = 0;
             this.all = [];
         }
-        World.prototype.wrap = function (f_) {
+        World.prototype.wrap = function (fPar) {
             var _this = this;
-            var f = f_;
+            var f = fPar;
             f.id = ++(this.nextId);
             f.deps = {};
             f.calls = {};
             var fCont = f.toString();
-            f.toString = function () { return "id " + f.id; };
+            f.toString = function () { return "id (" + f.id + ")"; };
             // console.log("Wrapped", fCont, "as", f["id"]);
             var wrapped = function () {
                 // console.log("{", f.toString());
