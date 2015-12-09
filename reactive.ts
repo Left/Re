@@ -6,29 +6,42 @@ module Re {
         (): T;
     }
 
-    export class Processors {
+    interface Cell2<T> extends Cell<T> {
+        id: number;
+        deps: { [id: number]: Cell2<T> };
+        calls: { [id: number]: Cell2<T> };
+        val: T;
+        wrapper: Cell<T>;
+    }
+
+    export class World {
         private nextId: number = 0;
 
-        private nowCalling: Cell<any>;
+        private nowCalling: Cell2<any>;
         private all:Cell<any>[] = [];
         private init: boolean;
 
-        wrap<T>(f: Cell<T>): Cell<T> {
-            f["id"] = ++(this.nextId);
-            f["deps"] = {};
+        wrap<T>(f_: Cell<T>): Cell<T> {
+            const f = <Cell2<T>> f_;
+
+            f.id = ++(this.nextId);
+            f.deps = {};
+            f.calls = {};
 
             const fCont = f.toString();
-            f.toString = () => "id " + f["id"];
+            f.toString = () => "id " + f.id;
 
             // console.log("Wrapped", fCont, "as", f["id"]);
 
             const wrapped: Cell<T> = (): T => {
+
                 // console.log("{", f.toString());
 
                 const wasCalling = this.nowCalling;
 
                 if (wasCalling) {
-                    f["deps"][wasCalling["id"]] = wasCalling;
+                    f.deps[wasCalling.id] = wasCalling;
+                    wasCalling.calls[f.id] = f;
                     //  console.log(wasCalling.toString(), "calls", f.toString());
                 }
 
@@ -40,26 +53,23 @@ module Re {
 
                 this.nowCalling = wasCalling;
 
-                if (f["val"] !== res) {
+                if (f.val !== res) {
                     // console.log(f.toString(), "has a new val", res);
-                    f["val"] = res;
+                    f.val = res;
 
                     if (!this.init) {
-                        setTimeout(() => {
-                            if (wasCalling) {
-                                wasCalling['wrapper']();
-                            }
+                        // setTimeout(() => {
                             // console.log("Recall", Object.keys(f['deps']).join(", "));
 
-                            for (const wr in f['deps']) {
-                                var toCall = f['deps'][wr];
+                            for (const wr in f.deps) {
+                                var toCall = f.deps[wr];
                                 // console.log("Need to recall>", wr, toCall.toString(), toCall["wrapper"].toString());
-                                toCall["wrapper"]();
+                                toCall.wrapper();
                                 // console.log("Called!", toCall.toString());
                                 // wr['wrapper']();
                             }
 
-                        }, 100);
+                        // }, 0);
                     }
                 }
 
@@ -67,7 +77,7 @@ module Re {
 
                 return res;
             };
-            f["wrapper"] = wrapped;
+            f.wrapper = wrapped;
             wrapped.toString = () => "Wrapped " + f.toString();
             this.all.push(wrapped);
 
