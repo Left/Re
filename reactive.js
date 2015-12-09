@@ -10,31 +10,30 @@ var Re;
             var f = fPar;
             f.id = ++(this.nextId);
             f.deps = {};
-            f.calls = {};
             var fCont = f.toString();
             f.toString = function () { return "id (" + f.id + ")"; };
-            // console.log("Wrapped", fCont, "as", f["id"]);
+            console.log("Wrapped", fCont, "as", f["id"]);
             var wrapped = function () {
                 // console.log("{", f.toString());
                 var wasCalling = _this.nowCalling;
                 if (wasCalling) {
                     f.deps[wasCalling.id] = wasCalling;
-                    wasCalling.calls[f.id] = f;
                 }
                 _this.nowCalling = f;
-                // Real call here
+                // Real call is performed here
                 // console.log("Calling", f.toString(), "( callers:", Object.keys(f['deps']).join(", "), ")");
                 var res = f();
                 _this.nowCalling = wasCalling;
                 if (f.val !== res) {
-                    // console.log(f.toString(), "has a new val", res);
+                    // console.log(f.toString(), f.val, "=>", res);
                     f.val = res;
                     if (!_this.init) {
-                        // setTimeout(() => {
                         // console.log("Recall", Object.keys(f['deps']).join(", "));
-                        for (var wr in f.deps) {
-                            var toCall = f.deps[wr];
-                            // console.log("Need to recall>", wr, toCall.toString(), toCall["wrapper"].toString());
+                        var deps = f.deps; // Save dependencies
+                        f.deps = {}; // Drop current dependencies. They will be re-filled during the next loop
+                        for (var wr in deps) {
+                            var toCall = deps[wr];
+                            // console.log("Need to recall>", wr, toCall.toString());
                             toCall.wrapper();
                         }
                     }

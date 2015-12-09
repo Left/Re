@@ -17,25 +17,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const cellInput = dataFromInput("inp");
     const cellInput2 = dataFromInput("inp2");
+    const cellInput3 = dataFromInput("inp3");
 
     const timer = w.wrap(() => {
         return (new Date()).toString();
     });
-    setInterval(timer, 25);
+    // setInterval(timer, 25);
 
     function mouseLastSnapShot(w: Re.World, event: string) {
         const lastMousePos = {x : null, y: null, ts: null, firstTs: null};
+
         window.addEventListener(event, ev => {
             const e = <MouseEvent>ev;
             lastMousePos.x = e.x;
             lastMousePos.y = e.y;
             lastMousePos.ts = e.timeStamp;
+
             if (lastMousePos.firstTs === null) {
                 lastMousePos.firstTs = e.timeStamp;
             }
+
+            newVar.x();
+            newVar.y();
+            newVar.ts();
         });
 
-        return {
+        var newVar = {
             x: w.wrap(() => lastMousePos.x),
             y: w.wrap(() => lastMousePos.y),
             ts: w.wrap(() => {
@@ -43,6 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return lastMousePos.ts - lastMousePos.firstTs
             })
         };
+
+        return newVar;
     }
 
     const mouseMove = mouseLastSnapShot(w, "mousemove");
@@ -51,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const lastDrag = w.wrap(() => {
         // console.log(mouseUp.ts(), mouseDown.ts());
-        if (mouseUp.ts() >= mouseDown.ts()) {
+        if (mouseDown.ts() >= mouseUp.ts()) {
             return Math.sqrt(Math.pow(mouseUp.x() - mouseDown.x(), 2) + Math.pow(mouseUp.y() - mouseDown.y(), 2));
         } else {
             return 0;
@@ -60,7 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const cellProcessor = w.wrap(() => {
         //
-        return "[" + cellInput() + " " + cellInput2() + " " +
+        return "[" + cellInput() + " " +
+            ((cellInput2() == "1") ? "" + cellInput3() : "") + " " +
             timer() +
             " " + lastDrag() + "]";
     });
@@ -71,6 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
     cnv.style.position = "fixed";
     cnv.style.left = 0 + "px";
     cnv.style.top = 100 + "px";
+    var context2 = cnv.getContext("2d");
+    context2.fillStyle = "rgb(40,40,40)";
+    context2.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
     w.wrap(() => {
         var downx = mouseDown.x();
@@ -82,14 +95,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        console.trace();
+        // console.trace();
         console.log("Draw!", downx, doyny, upx, upy);
         var context = cnv.getContext("2d");
         context.fillStyle = "red";
         // context.fillRect(mouseDown.x() - 1, mouseDown.y() - 1, 2, 2);
-        context.fillText(downx + "," + doyny, downx, doyny);
+        // context.fillText(downx + "," + doyny, downx, doyny);
         context.fillStyle = "blue";
-        context.fillText(upx + "," + upy, upx, upy);
+        // context.fillText(upx + "," + upy, upx, upy);
         context.lineWidth = 1;
 
         context.strokeStyle = "green";
