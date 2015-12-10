@@ -12,7 +12,7 @@ var Re;
             f.deps = {};
             var fCont = f.toString();
             f.toString = function () { return "id (" + f.id + ")"; };
-            console.log("Wrapped", fCont, "as", f["id"]);
+            // console.log("Wrapped", fCont, "as", f["id"]);
             var wrapped = function () {
                 // console.log("{", f.toString());
                 var wasCalling = _this.nowCalling;

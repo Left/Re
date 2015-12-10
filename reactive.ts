@@ -29,7 +29,7 @@ module Re {
             const fCont = f.toString();
             f.toString = () => "id (" + f.id + ")";
 
-            console.log("Wrapped", fCont, "as", f["id"]);
+            // console.log("Wrapped", fCont, "as", f["id"]);
 
             const wrapped: Cell<T> = (): T => {
                 // console.log("{", f.toString());
