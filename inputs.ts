@@ -3,38 +3,37 @@
 document.addEventListener("DOMContentLoaded", () => {
     const w = new Re.World();
 
-    const cellInput = HtmlTools.stringFromInput(w, "inp");
-    const cellInput2 = HtmlTools.booleanFromCheckbox(w, "check");
-    const cellInput3 = HtmlTools.stringFromInput(w, "inp3");
-    const selInput = HtmlTools.valFromSelect(w, "sel");
+    const firstName = HtmlTools.stringFromInput(w, document.getElementById("firstName"));
+    const hasFirstName = HtmlTools.booleanFromCheckbox(w, document.getElementById("hasSecondName"));
+    const secondName = HtmlTools.stringFromInput(w, document.getElementById("secondName"));
+    const footSize = HtmlTools.valFromSelect(w, document.getElementById("footSz"));
 
-    document.getElementById("defs").addEventListener("click",
+    document.getElementById("defaults").addEventListener("click",
         () => {
-            (<HTMLSelectElement>document.getElementById("sel")).selectedIndex = 0;
-            selInput();
+            (<HTMLSelectElement>document.getElementById("footSz")).selectedIndex = 0;
+            footSize();
         });
 
-    //const timer = w.wrap(() => {
-    //    return (new Date()).toString();
-    //});
-    //setInterval(timer, 25);
+    document.getElementById("send").addEventListener("click",
+        () => {
+            console.log(firstName.value());
+            console.log(hasFirstName.value());
+            console.log(secondName.value());
+            console.log(footSize.value());
+        });
 
-    const cellProcessor = w.wrap(() => {
-        var res = "[" + cellInput() + " " +
-            (cellInput2() ? cellInput3() : "") + " " +
-            selInput() +
+    // This should calc a result text
+    const resultText = w.wrap(() => {
+        var res = "[" + firstName() + " " +
+            (hasFirstName() ? secondName() : "") + " " +
+            footSize() +
             "]";
         return res;
     });
 
-    w.wrap(() => {
-        (<HTMLInputElement>document.getElementById("inp3")).disabled = !cellInput2();
-    });
+    w.wrap(() => (<HTMLInputElement>document.getElementById("secondName")).disabled = !hasFirstName() );
 
-    w.wrap(() => {
-        document.getElementById("res").textContent = cellProcessor();
-        return null;
-    });
+    w.wrap(() => document.getElementById("res").textContent = resultText());
 
     w.go();
 });

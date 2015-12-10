@@ -6,6 +6,10 @@ module Re {
         (): T;
     }
 
+    export interface CellWrapped<T> extends Cell<T> {
+        value();
+    }
+
     interface Cell2<T> extends Cell<T> {
         id: number;
         deps: { [id: number]: Cell2<T> };
@@ -20,7 +24,7 @@ module Re {
         private all:Cell<any>[] = [];
         private init: boolean;
 
-        wrap<T>(fPar: Cell<T>): Cell<T> {
+        wrap<T>(fPar: Cell<T>): CellWrapped<T> {
             const f = <Cell2<T>> fPar;
 
             f.id = ++(this.nextId);
@@ -74,9 +78,13 @@ module Re {
             };
             f.wrapper = wrapped;
             wrapped.toString = () => "Wrapped " + f.toString();
+
+            wrapped["f"] = f;
+            wrapped["value"] = () => f.val;
+
             this.all.push(wrapped);
 
-            return wrapped;
+            return <CellWrapped<T>>wrapped;
         }
 
         rerequest<T>(who: Cell<T>) {

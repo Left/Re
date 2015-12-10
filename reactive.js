@@ -43,6 +43,8 @@ var Re;
             };
             f.wrapper = wrapped;
             wrapped.toString = function () { return "Wrapped " + f.toString(); };
+            wrapped["f"] = f;
+            wrapped["value"] = function () { return f.val; };
             this.all.push(wrapped);
             return wrapped;
         };
