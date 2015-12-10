@@ -20,10 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
     //setInterval(timer, 25);
 
     const cellProcessor = w.wrap(() => {
-        return "[" + cellInput() + " " +
+        var res = "[" + cellInput() + " " +
             (cellInput2() ? cellInput3() : "") + " " +
             selInput() +
             "]";
+        return res;
     });
 
     w.wrap(() => {
@@ -31,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     w.wrap(() => {
-        document.getElementById("res").innerText = cellProcessor();
+        document.getElementById("res").textContent = cellProcessor();
         return null;
     });
 
