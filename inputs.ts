@@ -3,16 +3,13 @@
 document.addEventListener("DOMContentLoaded", () => {
     const w = new Re.World();
 
-    const cellInput = HtmlTools.dataFromInput(w, "inp", "input", el => (<HTMLInputElement>el).value);
-    const cellInput2 = HtmlTools.dataFromInput(w, "check", "change", el => (<HTMLInputElement>el).checked);
-    const cellInput3 = HtmlTools.dataFromInput(w, "inp3", "input", el => (<HTMLInputElement>el).value);
-    const selInput = HtmlTools.dataFromInput(w, "sel", "change", el => {
-        const sel = (<HTMLSelectElement>el);
-        return sel.options[sel.selectedIndex].value;
-    });
+    const cellInput = HtmlTools.stringFromInput(w, "inp");
+    const cellInput2 = HtmlTools.booleanFromCheckbox(w, "check");
+    const cellInput3 = HtmlTools.stringFromInput(w, "inp3");
+    const selInput = HtmlTools.valFromSelect(w, "sel");
 
     document.getElementById("defs").addEventListener("click",
-        e => {
+        () => {
             (<HTMLSelectElement>document.getElementById("sel")).selectedIndex = 0;
             selInput();
         });
@@ -23,11 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
     //setInterval(timer, 25);
 
     const cellProcessor = w.wrap(() => {
-        //
         return "[" + cellInput() + " " +
-            (cellInput2() ? "" + cellInput3() : "<>") + " " +
+            (cellInput2() ? cellInput3() : "") + " " +
             selInput() +
-            // timer() +
             "]";
     });
 
