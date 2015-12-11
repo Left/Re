@@ -67,7 +67,6 @@ module Re {
                             // console.log("Need to recall>", wr, toCall.toString());
                             toCall.wrapper();
                             // console.log("Called!", toCall.toString());
-                            // wr['wrapper']();
                         }
                     }
                 }
