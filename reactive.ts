@@ -1,104 +1,125 @@
 
 module Re {
-    type Value = string|number;
+    export interface ObjectValue {
+        isEqual(o: ObjectValue): boolean;
+        copy(): ObjectValue;
+    }
 
-    export interface Cell<T> {
+    export interface ObjectValueImpl<T extends ObjectValue> extends ObjectValue {
+        isEqual(o: T): boolean;
+        copy(): T;
+    }
+
+    export type Value = ObjectValue | string | number | boolean | void;
+
+    export interface Cell<T extends Value> {
         (): T;
     }
 
-    export interface CellWrapped<T> extends Cell<T> {
-        value();
+    export interface CellWrapped<T extends Value> extends Cell<T> {
+        (): T;
     }
 
-    interface Cell2<T> extends Cell<T> {
+    interface Cell2<T extends Value> extends Cell<T> {
         id: number;
+        initialized: boolean;
         deps: { [id: number]: Cell2<T> };
-        val: T;
-        wrapper: Cell<T>;
+        val: Value;
+        wrapper: CellWrapped<T>;
     }
 
     export class World {
         private nextId: number = 0;
 
         private nowCalling: Cell2<any>;
-        private all:Cell<any>[] = [];
-        private init: boolean;
+        private all:Cell2<any>[] = [];
 
-        wrap<T>(fPar: Cell<T>): CellWrapped<T> {
+        wrap<T extends Value>(fPar: Cell<T>): CellWrapped<T> {
             const f = <Cell2<T>> fPar;
 
             f.id = ++(this.nextId);
             f.deps = {};
+            f.initialized = false;
 
             const fCont = f.toString();
             f.toString = () => "id (" + f.id + ")";
 
             // console.log("Wrapped", fCont, "as", f["id"]);
 
-            const wrapped: Cell<T> = (): T => {
+            const wrapped = (): T => {
                 // console.log("{", f.toString());
 
                 const wasCalling = this.nowCalling;
 
                 if (wasCalling) {
                     f.deps[wasCalling.id] = wasCalling;
-                    //  console.log(wasCalling.toString(), "calls", f.toString());
+                    console.log(wasCalling.toString(), "calls", f.toString());
                 }
 
                 this.nowCalling = f;
 
                 // Real call is performed here
                 // console.log("Calling", f.toString(), "( callers:", Object.keys(f['deps']).join(", "), ")");
-                const res:T = f();
+                const res:Value = f();
+                f.initialized = true;
 
                 this.nowCalling = wasCalling;
 
-                if (f.val !== res) {
-                    // console.log(f.toString(), f.val, "=>", res);
-                    f.val = res;
+                if ((
+                        (typeof res === "object" && res != null) ?
+                            !((<ObjectValue>res).isEqual(<ObjectValue>(f.val))) :
+                            f.val !== res)) {
+                    console.log(f.toString(), f.val, "!==", res);
+                    // console.log("Recall", Object.keys(f['deps']).join(", "));
 
-                    if (!this.init) {
-                        // console.log("Recall", Object.keys(f['deps']).join(", "));
-
-                        var deps = f.deps; // Save dependencies
-                        f.deps = {}; // Drop current dependencies. They will be re-filled during the next loop
-                        for (const wr in deps) {
-                            var toCall = deps[wr];
-                            // console.log("Need to recall>", wr, toCall.toString());
-                            toCall.wrapper();
-                            // console.log("Called!", toCall.toString());
+                    if (typeof res === "object" && res != null) {
+                        f.val = (<ObjectValue>res).copy();
+                        if (!(<ObjectValue>res).isEqual(<ObjectValue>(f.val))) {
+                            console.trace();
                         }
+                    } else {
+                        f.val = res;
                     }
+                    var deps = f.deps; // Save dependencies
+                    f.deps = {}; // Drop current dependencies. They will be re-filled during the next loop
+                    for (const wr in deps) {
+                        var toCall = deps[wr];
+                        // console.log("Need to recall>", wr, toCall.toString());
+                        toCall.wrapper();
+                        // console.log("Called!", toCall.toString());
+                    }
+                } else {
+                    console.log(f.toString(), f.val, "===", res);
                 }
 
                 // console.log("}", f.toString());
 
-                return res;
+                return <T>res;
             };
             f.wrapper = wrapped;
             wrapped.toString = () => "Wrapped " + f.toString();
 
             wrapped["f"] = f;
-            wrapped["value"] = () => f.val;
+            // wrapped["value"] = () => f.val;
 
-            this.all.push(wrapped);
+            this.all.push(f);
 
             return <CellWrapped<T>>wrapped;
         }
 
-        rerequest<T>(who: Cell<T>) {
-            who();
-        }
-
         go(): void {
-            this.init = true;
-
-            for (const wr of this.all.reverse()) {
-                this.rerequest(wr);
-            }
-
-            this.init = false;
+            console.log("Initializing");
             // Let's run the whole world
+            const callUninitialized = () => {
+                for (var i = this.all.length - 1; i >= 0; --i) {
+                    if (!this.all[i].initialized) {
+                        this.all[i].wrapper();
+                        callUninitialized();
+                    }
+                }
+            }
+            callUninitialized();
+            console.log("Initializing done");
         }
     };
 }

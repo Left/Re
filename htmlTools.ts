@@ -1,7 +1,13 @@
 /// <reference path="reactive.ts"/>
 
 module HtmlTools {
-    export function dataFromInput<T>(w: Re.World, el: HTMLElement, evName: string, getter: (el: HTMLElement) => T): Re.CellWrapped<T> {
+    export function dataFromInput<Ret extends Re.Value>(
+        w: Re.World,
+        el: HTMLElement,
+        evName: string,
+        getter: (el: HTMLElement) => Ret)
+            : Re.CellWrapped<Ret> {
+
         const ret = w.wrap(() => {
             return getter(el);
         });
@@ -10,7 +16,7 @@ module HtmlTools {
             ret();
         });
 
-        return ret;
+        return <Re.CellWrapped<Ret>>ret;
     }
 
     export function stringFromInput(w: Re.World, el: HTMLElement): Re.CellWrapped<string> {
