@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var Re;
 (function (Re) {
     var World = (function () {
@@ -19,7 +24,6 @@ var Re;
                 var wasCalling = _this.nowCalling;
                 if (wasCalling) {
                     f.deps[wasCalling.id] = wasCalling;
-                    console.log(wasCalling.toString(), "calls", f.toString());
                 }
                 _this.nowCalling = f;
                 // Real call is performed here
@@ -30,7 +34,7 @@ var Re;
                 if (((typeof res === "object" && res != null) ?
                     !(res.isEqual((f.val))) :
                     f.val !== res)) {
-                    console.log(f.toString(), f.val, "!==", res);
+                    // console.log(f.toString(), f.val, "!==", res);
                     // console.log("Recall", Object.keys(f['deps']).join(", "));
                     if (typeof res === "object" && res != null) {
                         f.val = res.copy();
@@ -50,7 +54,6 @@ var Re;
                     }
                 }
                 else {
-                    console.log(f.toString(), f.val, "===", res);
                 }
                 // console.log("}", f.toString());
                 return res;
@@ -61,6 +64,29 @@ var Re;
             // wrapped["value"] = () => f.val;
             this.all.push(f);
             return wrapped;
+        };
+        World.prototype.makeCellArray = function () {
+            var CellArray = (function (_super) {
+                __extends(CellArray, _super);
+                function CellArray() {
+                    _super.apply(this, arguments);
+                }
+                CellArray.prototype.isEqual = function (o) {
+                    return o && this.length === o.length;
+                };
+                CellArray.prototype.copy = function () {
+                    var _this = this;
+                    var ret = new CellArray();
+                    ret.length = this.length;
+                    this.forEach(function (e, i) { ret[i] = _this[i]; });
+                    return ret;
+                };
+                return CellArray;
+            })(Array);
+            var arr2 = new CellArray();
+            return this.wrap(function () {
+                return arr2;
+            });
         };
         World.prototype.go = function () {
             var _this = this;

@@ -43,26 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const childrenCount = HtmlTools.stringFromInput(w, document.getElementById("childrenCount"));
 
-    class MyArray<T extends Re.Value> extends Array<Re.Cell<T>> implements Re.ObjectValue {
-        isEqual(o: Re.ObjectValue): boolean {
-            return o && this.length === (<MyArray<T>>o).length;
-        }
-
-        copy(): Re.ObjectValue {
-            const ret = new MyArray();
-            ret.length = this.length;
-            this.forEach((e, i) => { ret[i] = this[i]; });
-
-            return ret;
-        }
-    }
-
-    const arr2 = new MyArray<string>();
-
-    const elements = w.wrap(() => {
-        // console.log("ELEMENTS");
-        return arr2;
-    });
+    const children = w.makeCellArray();
 
     w.wrap(() => {
         const shouldBe = +(childrenCount());
@@ -72,27 +53,37 @@ document.addEventListener("DOMContentLoaded", () => {
         // }
 
         for (var i = parent.children.length; i < shouldBe; ++i) {
+            const toAdd = document.createElement("div");
             const el = document.createElement("input");
-            el.setAttribute("data-index", "" + i);
 
-            parent.appendChild(el);
+            toAdd.appendChild(el);
+            // toAdd.appendChild(document.createElement("br"));
 
-            elements()[i] = HtmlTools.stringFromInput(w, el);
+            parent.appendChild(toAdd);
+
+            children()[i] = HtmlTools.stringFromInput(w, el);
         }
 
         for (var i = parent.children.length; i > shouldBe; --i) {
-            (elements()[i] || (() => {}))();
             parent.removeChild(parent.children.item(i-1));
         }
 
-        if (shouldBe !== elements().length) {
-            elements().length = shouldBe;
-            elements();
+        if (shouldBe !== children().length) {
+            children().length = shouldBe;
+            children();
         }
     });
 
+    document.getElementById("addChild").addEventListener("click", e => {
+        const el = (<HTMLInputElement>document.getElementById("childrenCount"));
+        el.value = "" + (+el.value + 1);
+        childrenCount();
+    });
+
     w.wrap(() => {
-        document.getElementById("resChildren").textContent = elements().map((child) => child() ).join(" ");
+        document.getElementById("resChildren").textContent =
+            "[" + childrenCount() + "]" +
+            children().map((child) => child() ).join(" ");
     });
 
     w.go();

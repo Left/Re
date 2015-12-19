@@ -53,7 +53,7 @@ module Re {
 
                 if (wasCalling) {
                     f.deps[wasCalling.id] = wasCalling;
-                    console.log(wasCalling.toString(), "calls", f.toString());
+                    // console.log(wasCalling.toString(), "calls", f.toString());
                 }
 
                 this.nowCalling = f;
@@ -69,7 +69,7 @@ module Re {
                         (typeof res === "object" && res != null) ?
                             !((<ObjectValue>res).isEqual(<ObjectValue>(f.val))) :
                             f.val !== res)) {
-                    console.log(f.toString(), f.val, "!==", res);
+                    // console.log(f.toString(), f.val, "!==", res);
                     // console.log("Recall", Object.keys(f['deps']).join(", "));
 
                     if (typeof res === "object" && res != null) {
@@ -89,7 +89,7 @@ module Re {
                         // console.log("Called!", toCall.toString());
                     }
                 } else {
-                    console.log(f.toString(), f.val, "===", res);
+                    // console.log(f.toString(), f.val, "===", res);
                 }
 
                 // console.log("}", f.toString());
@@ -105,6 +105,28 @@ module Re {
             this.all.push(f);
 
             return <CellWrapped<T>>wrapped;
+        }
+
+        makeCellArray() {
+            class CellArray<T extends Re.Value> extends Array<Re.Cell<T>> implements Re.ObjectValue {
+                isEqual(o: Re.ObjectValue): boolean {
+                    return o && this.length === (<CellArray<T>>o).length;
+                }
+
+                copy(): Re.ObjectValue {
+                    const ret = new CellArray();
+                    ret.length = this.length;
+                    this.forEach((e, i) => { ret[i] = this[i]; });
+
+                    return ret;
+                }
+            }
+
+            const arr2 = new CellArray<string>();
+
+            return this.wrap(() => {
+                return arr2;
+            });
         }
 
         go(): void {
